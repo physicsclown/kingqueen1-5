@@ -73,10 +73,17 @@
             <form id="eval-form" class="modal-form">
                 <input type="text" id="eval-subject" placeholder="과목 (예: 국어)" required>
                 <input type="text" id="eval-title" placeholder="수행평가 제목" required>
-                <input type="date" id="eval-date" required>
                 
-                <label for="eval-image" class="file-label">📷 공지 사진 첨부 (선택):</label>
-                <input type="file" id="eval-image" accept="image/*">
+                <!-- 날짜 및 미정 체크박스 -->
+                <div class="date-input-group">
+                    <input type="date" id="eval-date">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="eval-date-unknown"> 날짜 미정 (??)
+                    </label>
+                </div>
+                
+                <label for="eval-images" class="file-label">📷 공지 사진 첨부 (다중 선택 가능):</label>
+                <input type="file" id="eval-images" accept="image/*" multiple>
 
                 <textarea id="eval-tip" rows="3" placeholder="💡 수행평가 꿀팁 (Tip)을 입력하세요..."></textarea>
 

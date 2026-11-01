@@ -1,6 +1,6 @@
 // LocalStorage Keys
-const EVAL_KEY = 'class_1_5_evals_v2';
-const NEWS_KEY = 'class_1_5_news_v2';
+const EVAL_KEY = 'class_1_5_evals_v5';
+const NEWS_KEY = 'class_1_5_news_v5';
 
 // 데이터 로드 / 저장
 function getEvals() { return JSON.parse(localStorage.getItem(EVAL_KEY) || '[]'); }
@@ -8,7 +8,7 @@ function saveEvals(data) { localStorage.setItem(EVAL_KEY, JSON.stringify(data));
 function getNews() { return JSON.parse(localStorage.getItem(NEWS_KEY) || '[]'); }
 function saveNews(data) { localStorage.setItem(NEWS_KEY, JSON.stringify(data)); }
 
-// 현재 달력의 연도와 월 상태 (기본값: 현재 날짜)
+// 현재 달력의 연도와 월 상태
 let currentDate = new Date();
 
 // 모달 다루기
@@ -25,6 +25,19 @@ document.querySelectorAll('.close-modal-btn').forEach(btn => {
     };
 });
 
+// 날짜 미정 체크박스 제어
+const unknownCheckbox = document.getElementById('eval-date-unknown');
+const dateInput = document.getElementById('eval-date');
+
+unknownCheckbox.addEventListener('change', (e) => {
+    if (e.target.checked) {
+        dateInput.value = '';
+        dateInput.disabled = true;
+    } else {
+        dateInput.disabled = false;
+    }
+});
+
 // 달력 월 이동 버튼
 document.getElementById('prev-month-btn').onclick = () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
@@ -36,39 +49,46 @@ document.getElementById('next-month-btn').onclick = () => {
     renderCalendar();
 };
 
-// 수행평가 추가
+// 수행평가 추가 (다중 이미지 및 미정 날짜 지원)
 document.getElementById('eval-form').onsubmit = (e) => {
     e.preventDefault();
     const subject = document.getElementById('eval-subject').value;
     const title = document.getElementById('eval-title').value;
-    const date = document.getElementById('eval-date').value;
+    const isUnknown = unknownCheckbox.checked;
+    const date = isUnknown ? '??' : dateInput.value;
     const tip = document.getElementById('eval-tip').value;
-    const imageInput = document.getElementById('eval-image');
+    const imageInput = document.getElementById('eval-images');
 
-    const saveAndClose = (imageData) => {
+    if (!isUnknown && !dateInput.value) {
+        alert('날짜를 지정하거나 [날짜 미정(??)]을 체크해 주세요.');
+        return;
+    }
+
+    const files = Array.from(imageInput.files || []);
+    const imagePromises = files.map(file => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (event) => resolve(event.target.result);
+            reader.readAsDataURL(file);
+        });
+    });
+
+    Promise.all(imagePromises).then(images => {
         const evals = getEvals();
-        evals.push({ subject, title, date, tip, image: imageData });
+        evals.push({ subject, title, date, tip, images });
         saveEvals(evals);
 
         document.getElementById('eval-form').reset();
+        dateInput.disabled = false;
         evalModal.classList.add('hidden');
 
-        // 등록한 수행평가의 월로 달력 이동
-        if (date) {
+        if (!isUnknown && date) {
             const addedDate = new Date(date);
             currentDate = new Date(addedDate.getFullYear(), addedDate.getMonth(), 1);
         }
 
         renderEvals();
-    };
-
-    if (imageInput.files && imageInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = (event) => saveAndClose(event.target.result);
-        reader.readAsDataURL(imageInput.files[0]);
-    } else {
-        saveAndClose(null);
-    }
+    });
 };
 
 // 기사 추가
@@ -94,21 +114,38 @@ function renderEvals() {
     const sortType = document.getElementById('sort-select').value;
     const listEl = document.getElementById('eval-list');
 
-    if (sortType === 'date') evals.sort((a, b) => new Date(a.date) - new Date(b.date));
-    else evals.sort((a, b) => a.subject.localeCompare(b.subject));
+    if (sortType === 'date') {
+        evals.sort((a, b) => {
+            if (a.date === '??') return 1;
+            if (b.date === '??') return -1;
+            return new Date(a.date) - new Date(b.date);
+        });
+    } else {
+        evals.sort((a, b) => a.subject.localeCompare(b.subject));
+    }
 
     listEl.innerHTML = evals.length === 0 ? '<p style="color:#888; text-align:center; padding:10px;">등록된 수행평가가 없습니다.</p>' : '';
 
     evals.forEach((item, index) => {
         const div = document.createElement('div');
         div.className = 'eval-card';
+        
+        let galleryHtml = '';
+        if (item.images && item.images.length > 0) {
+            galleryHtml = `<div class="eval-gallery">` + 
+                item.images.map(img => `<img src="${img}" class="eval-img" alt="공지 사진">`).join('') + 
+                `</div>`;
+        } else {
+            galleryHtml = '<p style="color:#aaa; font-size:12px;">첨부된 이미지 없음</p>';
+        }
+
         div.innerHTML = `
             <div class="eval-header" onclick="toggleAccordion('eval-detail-${index}')">
-                <span><strong>[${item.subject}]</strong> ${item.title} (${item.date})</span>
+                <span><strong>[${item.subject}]</strong> ${item.title} <span style="color:${item.date === '??' ? '#e74c3c' : '#3498db'};">(${item.date})</span></span>
                 <span class="del-btn" onclick="deleteEval(event, ${index})">삭제</span>
             </div>
             <div id="eval-detail-${index}" class="eval-details hidden">
-                ${item.image ? `<img src="${item.image}" class="eval-img" alt="수행평가 공지">` : '<p style="color:#aaa; font-size:12px;">첨부된 이미지 없음</p>'}
+                ${galleryHtml}
                 ${item.tip ? `<div class="tip-box">💡 <strong>꿀팁 (Tip):</strong> ${item.tip}</div>` : ''}
             </div>
         `;
@@ -140,7 +177,7 @@ function renderNews() {
     });
 }
 
-// 동적 달력 렌더링 (이전/다음 월 넘기기 지원)
+// 달력 렌더링
 function renderCalendar() {
     const calendarEl = document.getElementById('calendar');
     const calendarTitle = document.getElementById('calendar-title');
@@ -149,24 +186,20 @@ function renderCalendar() {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
 
-    // 제목 업데이트 (예: 2026년 12월, 2027년 1월)
     calendarTitle.innerText = `${year}년 ${month + 1}월`;
 
-    // 해당 월의 첫 번째 날 및 마지막 날짜 계산
     const firstDay = new Date(year, month, 1).getDay();
     const lastDate = new Date(year, month + 1, 0).getDate();
 
     const evals = getEvals();
     const evalDates = new Set(evals.map(e => e.date));
 
-    // 1일 이전의 빈 공간 채우기
     for (let i = 0; i < firstDay; i++) {
         const emptyEl = document.createElement('div');
         emptyEl.className = 'cal-day empty';
         calendarEl.appendChild(emptyEl);
     }
 
-    // 날짜 박스 생성
     for (let day = 1; day <= lastDate; day++) {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const dayEl = document.createElement('div');
