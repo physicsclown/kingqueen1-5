@@ -1,7 +1,7 @@
 // LocalStorage Keys
-const EVAL_KEY = 'class_1_5_evals_v6';
-const SCHEDULE_KEY = 'class_1_5_schedules_v6';
-const NEWS_KEY = 'class_1_5_news_v6';
+const EVAL_KEY = 'class_1_5_evals_v8';
+const SCHEDULE_KEY = 'class_1_5_schedules_v8';
+const NEWS_KEY = 'class_1_5_news_v8';
 
 function getEvals() { return JSON.parse(localStorage.getItem(EVAL_KEY) || '[]'); }
 function saveEvals(data) { localStorage.setItem(EVAL_KEY, JSON.stringify(data)); }
@@ -14,17 +14,19 @@ function saveNews(data) { localStorage.setItem(NEWS_KEY, JSON.stringify(data)); 
 
 let currentDate = new Date();
 
-// 모달
+// 모달 요소들
 const evalModal = document.getElementById('eval-modal');
 const scheduleModal = document.getElementById('schedule-modal');
 const newsModal = document.getElementById('news-modal');
 const imageZoomModal = document.getElementById('image-zoom-modal');
 const zoomedImg = document.getElementById('zoomed-img');
 
+// 모달 열기 버튼
 document.getElementById('open-eval-modal-btn').onclick = () => evalModal.classList.remove('hidden');
 document.getElementById('open-schedule-modal-btn').onclick = () => scheduleModal.classList.remove('hidden');
 document.getElementById('open-news-modal-btn').onclick = () => newsModal.classList.remove('hidden');
 
+// 모달 닫기 버튼 공통 처리
 document.querySelectorAll('.close-modal-btn').forEach(btn => {
     btn.onclick = () => {
         evalModal.classList.add('hidden');
@@ -33,20 +35,24 @@ document.querySelectorAll('.close-modal-btn').forEach(btn => {
     };
 });
 
-// 이미지 줌 모달 닫기
+// 모달 배경 클릭시 닫기
+window.onclick = (e) => {
+    if (e.target === evalModal) evalModal.classList.add('hidden');
+    if (e.target === scheduleModal) scheduleModal.classList.add('hidden');
+    if (e.target === newsModal) newsModal.classList.add('hidden');
+    if (e.target === imageZoomModal) imageZoomModal.classList.add('hidden');
+};
+
+// 이미지 확대 모달 닫기
 document.querySelector('.zoom-close-btn').onclick = () => {
     imageZoomModal.classList.add('hidden');
 };
-imageZoomModal.onclick = (e) => {
-    if (e.target === imageZoomModal) {
-        imageZoomModal.classList.add('hidden');
-    }
-};
 
-function openZoomModal(imgSrc) {
+// 전역 함수로 이미지 줌 오픈 등록
+window.openZoomModal = function(imgSrc) {
     zoomedImg.src = imgSrc;
     imageZoomModal.classList.remove('hidden');
-}
+};
 
 // 날짜 미정 체크박스 제어
 const unknownCheckbox = document.getElementById('eval-date-unknown');
@@ -61,8 +67,11 @@ unknownCheckbox.addEventListener('change', (e) => {
     }
 });
 
+// 다중 이미지 파일 읽기 함수 (확실한 Promise 처리)
 function readMultipleImages(fileInput) {
     const files = Array.from(fileInput.files || []);
+    if (files.length === 0) return Promise.resolve([]);
+    
     const promises = files.map(file => {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -73,6 +82,7 @@ function readMultipleImages(fileInput) {
     return Promise.all(promises);
 }
 
+// 이미지 미리보기 리스너
 document.getElementById('eval-images').addEventListener('change', (e) => {
     previewImages(e.target, 'eval-image-preview');
 });
@@ -152,7 +162,7 @@ document.getElementById('schedule-form').onsubmit = (e) => {
     renderCalendar();
 };
 
-// 3. 기사 등록
+// 3. 기사 등록 (다중 사진 포함)
 document.getElementById('news-form').onsubmit = (e) => {
     e.preventDefault();
     const author = document.getElementById('news-author').value;
@@ -174,7 +184,7 @@ document.getElementById('news-form').onsubmit = (e) => {
 };
 
 // 수행평가 렌더링
-function renderEvals() {
+window.renderEvals = function() {
     const evals = getEvals();
     const sortType = document.getElementById('sort-select').value;
     const listEl = document.getElementById('eval-list');
@@ -218,10 +228,10 @@ function renderEvals() {
     });
 
     renderCalendar();
-}
+};
 
-// 기사 렌더링
-function renderNews() {
+// 기사 렌더링 (다중 이미지 포함)
+window.renderNews = function() {
     const news = getNews();
     const listEl = document.getElementById('news-list');
     listEl.innerHTML = news.length === 0 ? '<p style="color:#888; text-align:center; padding:10px;">발행된 기사가 없습니다.</p>' : '';
@@ -249,7 +259,7 @@ function renderNews() {
         `;
         listEl.appendChild(div);
     });
-}
+};
 
 document.getElementById('prev-month-btn').onclick = () => {
     currentDate.setMonth(currentDate.getMonth() - 1);
@@ -261,7 +271,7 @@ document.getElementById('next-month-btn').onclick = () => {
     renderCalendar();
 };
 
-function renderCalendar() {
+window.renderCalendar = function() {
     const calendarEl = document.getElementById('calendar');
     const calendarTitle = document.getElementById('calendar-title');
     calendarEl.innerHTML = '';
@@ -311,28 +321,28 @@ function renderCalendar() {
         dayEl.innerHTML = `<span>${day}</span>${badgesHtml}${titleTagHtml}`;
         calendarEl.appendChild(dayEl);
     }
-}
+};
 
-function toggleAccordion(id) {
+window.toggleAccordion = function(id) {
     const el = document.getElementById(id);
     el.classList.toggle('hidden');
-}
+};
 
-function deleteEval(e, index) {
+window.deleteEval = function(e, index) {
     e.stopPropagation();
     const evals = getEvals();
     evals.splice(index, 1);
     saveEvals(evals);
     renderEvals();
-}
+};
 
-function deleteNews(e, index) {
+window.deleteNews = function(e, index) {
     e.stopPropagation();
     const news = getNews();
     news.splice(index, 1);
     saveNews(news);
     renderNews();
-}
+};
 
 document.getElementById('sort-select').addEventListener('change', renderEvals);
 
