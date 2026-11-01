@@ -15,53 +15,91 @@
 
         <!-- 메인 콘텐츠 영역 (2열 레이아웃) -->
         <div class="main-content">
-            <!-- 왼쪽: 수행평가 목록 및 입력 -->
+            <!-- 왼쪽: 수행평가 목록 -->
             <section class="left-section card">
                 <div class="section-header">
                     <h2>수행평가 목록</h2>
-                    <div class="filter-group">
-                        <label for="sort-select">정렬:</label>
+                    <div class="header-actions">
                         <select id="sort-select">
                             <option value="date">일정순</option>
                             <option value="subject">과목별</option>
                         </select>
+                        <button id="open-eval-modal-btn" class="btn-primary">+ 수행 작성하기</button>
                     </div>
                 </div>
 
-                <!-- 등록 폼 -->
-                <form id="eval-form" class="input-form">
-                    <input type="text" id="eval-subject" placeholder="과목 (예: 국어)" required>
-                    <input type="text" id="eval-title" placeholder="수행평가 내용" required>
-                    <input type="date" id="eval-date" required>
-                    <button type="submit">추가</button>
-                </form>
-
-                <!-- 리스트 -->
+                <!-- 수행평가 리스트 -->
                 <ul id="eval-list" class="item-list"></ul>
             </section>
 
-            <!-- 오른쪽: 일정 (달력) -->
+            <!-- 오른쪽: 일정 (달력 - 월 이동 기능 추가) -->
             <section class="right-section card">
                 <div class="section-header">
-                    <h2>일정</h2>
+                    <div class="calendar-nav">
+                        <button id="prev-month-btn" class="nav-btn">&lt;</button>
+                        <h2 id="calendar-title">2026년 11월</h2>
+                        <button id="next-month-btn" class="nav-btn">&gt;</button>
+                    </div>
                     <span class="legend"><span class="badge">●</span> : 수행 있는 날</span>
                 </div>
+                <!-- 요일 헤더 -->
+                <div class="calendar-weekdays">
+                    <div>일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div>토</div>
+                </div>
+                <!-- 날짜 그리드 -->
                 <div id="calendar" class="calendar-grid"></div>
             </section>
         </div>
 
-        <!-- 하단: 1-5 기사 작성 영역 -->
+        <!-- 하단: 1-5 학급 신문/기사 섹션 -->
         <section class="bottom-section card">
-            <h2>1-5 기사</h2>
-            
-            <form id="news-form" class="input-form">
-                <input type="text" id="news-author" placeholder="작성자" style="width: 120px;" required>
-                <input type="text" id="news-content" placeholder="기사 내용을 입력하세요..." required style="flex: 1;">
-                <button type="submit">기사 등록</button>
-            </form>
+            <div class="section-header">
+                <h2>📰 1-5 학급 신문</h2>
+                <button id="open-news-modal-btn" class="btn-primary">+ 기사 작성하기</button>
+            </div>
 
-            <ul id="news-list" class="news-list"></ul>
+            <!-- 기사 리스트 (헤드라인 형태) -->
+            <div id="news-list" class="news-list"></div>
         </section>
+    </div>
+
+    <!-- 모달 1: 수행평가 작성 모달 -->
+    <div id="eval-modal" class="modal hidden">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h3>수행평가 작성</h3>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <form id="eval-form" class="modal-form">
+                <input type="text" id="eval-subject" placeholder="과목 (예: 국어)" required>
+                <input type="text" id="eval-title" placeholder="수행평가 제목" required>
+                <input type="date" id="eval-date" required>
+                
+                <label for="eval-image" class="file-label">📷 공지 사진 첨부 (선택):</label>
+                <input type="file" id="eval-image" accept="image/*">
+
+                <textarea id="eval-tip" rows="3" placeholder="💡 수행평가 꿀팁 (Tip)을 입력하세요..."></textarea>
+
+                <button type="submit" class="btn-primary full-width">등록하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 모달 2: 기사 작성 모달 -->
+    <div id="news-modal" class="modal hidden">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h3>기사 작성</h3>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <form id="news-form" class="modal-form">
+                <input type="text" id="news-author" placeholder="작성자 이름" required>
+                <input type="text" id="news-headline" placeholder="기사 헤드라인 (제목)" required>
+                <textarea id="news-content" rows="5" placeholder="기사 세부 내용을 입력하세요..." required></textarea>
+
+                <button type="submit" class="btn-primary full-width">기사 발행</button>
+            </form>
+        </div>
     </div>
 
     <script src="app.js"></script>
