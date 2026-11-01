@@ -444,3 +444,77 @@ button, select, input, textarea {
     transform: none;
     opacity: 1;
 }
+/* 수행평가 목록과 달력이 따로따로 길어지게 */
+.main-content {
+    align-items: start;
+}
+
+/* 달력 날짜 클릭 */
+.cal-day:not(.empty) {
+    cursor: pointer;
+}
+
+.cal-day.selected {
+    border: 2px solid #3498db;
+    background: #eaf4fd;
+}
+
+.day-detail {
+    margin-top: 14px;
+    padding: 14px;
+    border: 2px solid #3498db;
+    border-radius: 10px;
+    background: #f8fbff;
+}
+
+.day-detail-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.day-detail-head h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.day-detail-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    color: #666;
+}
+
+.day-section-title {
+    font-weight: bold;
+    font-size: 14px;
+    margin: 12px 0 6px;
+    color: #2c3e50;
+}
+
+.day-item {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    text-align: left;
+}
+
+.day-item-title {
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.day-schedule {
+    border-left: 4px solid #2ecc71;
+}
+
+.day-empty {
+    color: #888;
+    font-size: 13px;
+    padding: 6px 0;
+}
