@@ -13,6 +13,7 @@ function getNews() { return JSON.parse(localStorage.getItem(NEWS_KEY) || '[]'); 
 function saveNews(data) { localStorage.setItem(NEWS_KEY, JSON.stringify(data)); }
 
 let currentDate = new Date();
+let selectedDateStr = null; // 달력에서 클릭한 날짜 (YYYY-MM-DD)
 
 // 모달 요소들
 const evalModal = document.getElementById('eval-modal');
@@ -377,6 +378,12 @@ window.renderCalendar = function() {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const dayEl = document.createElement('div');
         dayEl.className = 'cal-day';
+        if (dateStr === selectedDateStr) dayEl.classList.add('selected');
+        dayEl.onclick = () => {
+            selectedDateStr = (selectedDateStr === dateStr) ? null : dateStr;
+            renderCalendar();
+            if (selectedDateStr) getDayDetailEl().scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        };
 
         const hasEval = evalDates.has(dateStr);
         const daySchedules = scheduleMap[dateStr] || [];
@@ -394,7 +401,85 @@ window.renderCalendar = function() {
         dayEl.innerHTML = `<span>${day}</span>${badgesHtml}${titleTagHtml}`;
         calendarEl.appendChild(dayEl);
     }
+
+    renderDayDetail();
 };
+
+// 날짜 클릭 시 그 날의 수행평가 + 일정을 목록으로 보여주는 패널
+function getDayDetailEl() {
+    let el = document.getElementById('day-detail');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'day-detail';
+        el.className = 'day-detail hidden';
+        document.getElementById('calendar').insertAdjacentElement('afterend', el);
+    }
+    return el;
+}
+
+function makeEl(tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text !== undefined) el.textContent = text;
+    return el;
+}
+
+function renderDayDetail() {
+    const el = getDayDetailEl();
+    const prefix = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-`;
+    if (!selectedDateStr || !selectedDateStr.startsWith(prefix)) {
+        el.classList.add('hidden');
+        return;
+    }
+
+    const dayEvals = getEvals().filter(e => e.date === selectedDateStr);
+    const daySchedules = getSchedules().filter(s => s.date === selectedDateStr);
+    const parts = selectedDateStr.split('-');
+
+    el.innerHTML = '';
+    el.classList.remove('hidden');
+
+    const head = makeEl('div', 'day-detail-head');
+    head.appendChild(makeEl('h3', '', `${Number(parts[1])}월 ${Number(parts[2])}일`));
+    const closeBtn = makeEl('button', 'day-detail-close', '×');
+    closeBtn.type = 'button';
+    closeBtn.onclick = () => { selectedDateStr = null; renderCalendar(); };
+    head.appendChild(closeBtn);
+    el.appendChild(head);
+
+    if (dayEvals.length === 0 && daySchedules.length === 0) {
+        el.appendChild(makeEl('p', 'day-empty', '이 날은 등록된 수행평가나 일정이 없어요.'));
+        return;
+    }
+
+    if (dayEvals.length > 0) {
+        el.appendChild(makeEl('div', 'day-section-title', `📘 수행평가 (${dayEvals.length})`));
+        dayEvals.forEach(item => {
+            const box = makeEl('div', 'day-item');
+            box.appendChild(makeEl('div', 'day-item-title', `[${item.subject}] ${item.title}`));
+            if (item.tip) box.appendChild(makeEl('div', 'tip-box', `💡 꿀팁: ${item.tip}`));
+            if (item.images && item.images.length > 0) {
+                const gallery = makeEl('div', 'eval-gallery');
+                item.images.forEach(src => {
+                    const img = makeEl('img', 'eval-img');
+                    img.src = src;
+                    img.alt = '수행 공지 사진';
+                    img.dataset.zoom = '1';
+                    gallery.appendChild(img);
+                });
+                box.appendChild(gallery);
+            }
+            el.appendChild(box);
+        });
+    }
+
+    if (daySchedules.length > 0) {
+        el.appendChild(makeEl('div', 'day-section-title', `📅 일정 (${daySchedules.length})`));
+        daySchedules.forEach(sc => {
+            el.appendChild(makeEl('div', 'day-item day-schedule', sc.title));
+        });
+    }
+}
 
 window.toggleAccordion = function(id) {
     const el = document.getElementById(id);
