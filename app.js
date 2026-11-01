@@ -54,6 +54,10 @@ window.openZoomModal = function(imgSrc) {
     imageZoomModal.classList.remove('hidden');
 };
 
+document.addEventListener('click', (e) => {
+    if (e.target.dataset && e.target.dataset.zoom) openZoomModal(e.target.src);
+});
+
 // 날짜 미정 체크박스 제어
 const unknownCheckbox = document.getElementById('eval-date-unknown');
 const dateInput = document.getElementById('eval-date');
@@ -67,19 +71,41 @@ unknownCheckbox.addEventListener('change', (e) => {
     }
 });
 
-// 다중 이미지 파일 읽기 함수 (확실한 Promise 처리)
+// 다중 이미지 읽기 + 압축 (localStorage 용량 초과 방지)
+function compressImage(file, maxSize = 1000, quality = 0.7) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onerror = () => resolve(null);
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onerror = () => resolve(null);
+            img.onload = () => {
+                const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
 function readMultipleImages(fileInput) {
     const files = Array.from(fileInput.files || []);
     if (files.length === 0) return Promise.resolve([]);
-    
-    const promises = files.map(file => {
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => resolve(e.target.result);
-            reader.readAsDataURL(file);
-        });
-    });
-    return Promise.all(promises);
+    return Promise.all(files.map(f => compressImage(f))).then(list => list.filter(Boolean));
+}
+
+// 저장 실패(용량 초과) 시 알림
+function safeSave(saveFn, data) {
+    try { saveFn(data); return true; }
+    catch (err) {
+        alert('저장 공간이 가득 찼어요 😢 사진 수를 줄이거나 예전 항목을 삭제해 주세요.');
+        return false;
+    }
 }
 
 // 이미지 미리보기 리스너
@@ -125,7 +151,7 @@ document.getElementById('eval-form').onsubmit = (e) => {
     readMultipleImages(imageInput).then(images => {
         const evals = getEvals();
         evals.push({ subject, title, date, tip, images });
-        saveEvals(evals);
+        if (!safeSave(saveEvals, evals)) return;
 
         document.getElementById('eval-form').reset();
         document.getElementById('eval-image-preview').innerHTML = '';
@@ -174,7 +200,7 @@ document.getElementById('news-form').onsubmit = (e) => {
     readMultipleImages(imageInput).then(images => {
         const news = getNews();
         news.push({ author, headline, content, images, date });
-        saveNews(news);
+        if (!safeSave(saveNews, news)) return;
 
         document.getElementById('news-form').reset();
         document.getElementById('news-image-preview').innerHTML = '';
@@ -185,7 +211,7 @@ document.getElementById('news-form').onsubmit = (e) => {
 
 // 수행평가 렌더링
 window.renderEvals = function() {
-    const evals = getEvals();
+    const evals = getEvals().map((e, i) => ({ ...e, _i: i }));
     const sortType = document.getElementById('sort-select').value;
     const listEl = document.getElementById('eval-list');
 
@@ -208,7 +234,7 @@ window.renderEvals = function() {
         let galleryHtml = '';
         if (item.images && item.images.length > 0) {
             galleryHtml = `<div class="eval-gallery">` + 
-                item.images.map(img => `<img src="${img}" class="eval-img" alt="수행 공지 사진" onclick="openZoomModal('${img}')">`).join('') + 
+                item.images.map(img => `<img src="${img}" class="eval-img" alt="수행 공지 사진" data-zoom="1">`).join('') + 
                 `</div>`;
         } else {
             galleryHtml = '<p style="color:#aaa; font-size:12px;">첨부된 이미지 없음</p>';
@@ -217,7 +243,7 @@ window.renderEvals = function() {
         div.innerHTML = `
             <div class="eval-header" onclick="toggleAccordion('eval-detail-${index}')">
                 <span><strong>[${item.subject}]</strong> ${item.title} <span style="color:${item.date === '??' ? '#e74c3c' : '#3498db'};">(${item.date})</span></span>
-                <span class="del-btn" onclick="deleteEval(event, ${index})">삭제</span>
+                <span class="del-btn" onclick="deleteEval(event, ${item._i})">삭제</span>
             </div>
             <div id="eval-detail-${index}" class="eval-details hidden">
                 ${galleryHtml}
@@ -243,7 +269,7 @@ window.renderNews = function() {
         let galleryHtml = '';
         if (item.images && item.images.length > 0) {
             galleryHtml = `<div class="news-gallery">` + 
-                item.images.map(img => `<img src="${img}" class="news-img" alt="기사 사진" onclick="openZoomModal('${img}')">`).join('') + 
+                item.images.map(img => `<img src="${img}" class="news-img" alt="기사 사진" data-zoom="1">`).join('') + 
                 `</div>`;
         }
 
