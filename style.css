@@ -425,3 +425,22 @@ button, select, input, textarea {
     font-weight: bold;
     cursor: pointer;
 }
+/* 사진을 확대하지 않아도 크게 보이게 */
+.eval-gallery, .news-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.eval-img, .news-img {
+    width: 100%;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
+    background: #f5f5f5;
+}
+
+.eval-img:hover, .news-img:hover {
+    transform: none;
+    opacity: 1;
+}
