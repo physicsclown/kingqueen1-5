@@ -10,7 +10,7 @@
     <div class="container">
         <!-- 헤더 -->
         <header>
-            <h1>1-5 수행평가</h1>
+            <h1>1-5 수행평가 & 학급 대시보드</h1>
         </header>
 
         <!-- 메인 콘텐츠 영역 (2열 레이아웃) -->
@@ -32,7 +32,7 @@
                 <ul id="eval-list" class="item-list"></ul>
             </section>
 
-            <!-- 오른쪽: 일정 (달력 - 월 이동 기능 추가) -->
+            <!-- 오른쪽: 일정 (달력) -->
             <section class="right-section card">
                 <div class="section-header">
                     <div class="calendar-nav">
@@ -40,7 +40,11 @@
                         <h2 id="calendar-title">2026년 11월</h2>
                         <button id="next-month-btn" class="nav-btn">&gt;</button>
                     </div>
-                    <span class="legend"><span class="badge">●</span> : 수행 있는 날</span>
+                    <button id="open-schedule-modal-btn" class="btn-secondary">+ 일정 추가</button>
+                </div>
+                <div class="legend-bar">
+                    <span class="legend"><span class="badge blue">●</span> 수행평가</span>
+                    <span class="legend"><span class="badge green">●</span> 일반 일정</span>
                 </div>
                 <!-- 요일 헤더 -->
                 <div class="calendar-weekdays">
@@ -82,8 +86,9 @@
                     </label>
                 </div>
                 
-                <label for="eval-images" class="file-label">📷 공지 사진 첨부 (다중 선택 가능):</label>
+                <label class="file-label">📷 공지 사진 첨부 (여러 장 선택 가능):</label>
                 <input type="file" id="eval-images" accept="image/*" multiple>
+                <div id="eval-image-preview" class="preview-container"></div>
 
                 <textarea id="eval-tip" rows="3" placeholder="💡 수행평가 꿀팁 (Tip)을 입력하세요..."></textarea>
 
@@ -92,7 +97,22 @@
         </div>
     </div>
 
-    <!-- 모달 2: 기사 작성 모달 -->
+    <!-- 모달 2: 일반 일정 추가 모달 -->
+    <div id="schedule-modal" class="modal hidden">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <h3>일반 일정 추가</h3>
+                <button class="close-modal-btn">&times;</button>
+            </div>
+            <form id="schedule-form" class="modal-form">
+                <input type="text" id="schedule-title" placeholder="일정 제목 (예: 체육대회)" required>
+                <input type="date" id="schedule-date" required>
+                <button type="submit" class="btn-primary full-width">일정 등록</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 모달 3: 기사 작성 모달 -->
     <div id="news-modal" class="modal hidden">
         <div class="modal-content card">
             <div class="modal-header">
@@ -102,11 +122,21 @@
             <form id="news-form" class="modal-form">
                 <input type="text" id="news-author" placeholder="작성자 이름" required>
                 <input type="text" id="news-headline" placeholder="기사 헤드라인 (제목)" required>
-                <textarea id="news-content" rows="5" placeholder="기사 세부 내용을 입력하세요..." required></textarea>
+                <textarea id="news-content" rows="4" placeholder="기사 세부 내용을 입력하세요..." required></textarea>
+
+                <label class="file-label">📷 기사 사진 첨부 (여러 장 선택 가능):</label>
+                <input type="file" id="news-images" accept="image/*" multiple>
+                <div id="news-image-preview" class="preview-container"></div>
 
                 <button type="submit" class="btn-primary full-width">기사 발행</button>
             </form>
         </div>
+    </div>
+
+    <!-- 이미지 확대 보기 모달 (Lightbox) -->
+    <div id="image-zoom-modal" class="modal image-zoom-modal hidden">
+        <span class="zoom-close-btn">&times;</span>
+        <img class="zoom-modal-content" id="zoomed-img" alt="확대된 이미지">
     </div>
 
     <script src="app.js"></script>
