@@ -544,6 +544,21 @@ window.deleteNews = function(e, id) {
     if (!confirm('이 기사를 삭제할까요? (모두에게서 사라져요)')) return;
     db.collection('news').doc(id).delete().catch(err => alert('삭제 실패: ' + err.message));
 };
+// 일반 일정 삭제
+window.deleteSchedule = async function(id) {
+    if (!confirm('이 일정을 삭제할까요? (모두에게서 사라져요)')) return;
+
+    try {
+        console.log('삭제 시도:', id);
+
+        await db.collection('schedules').doc(id).delete();
+
+        alert('일정이 삭제되었습니다!');
+    } catch (err) {
+        console.error('일정 삭제 오류:', err);
+        alert('일정 삭제 실패!\n오류 내용: ' + err.message);
+    }
+};
 
 document.getElementById('sort-select').addEventListener('change', renderEvals);
 
