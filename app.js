@@ -507,12 +507,25 @@ function renderDayDetail() {
         });
     }
 
-    if (daySchedules.length > 0) {
-        el.appendChild(makeEl('div', 'day-section-title', `📅 일정 (${daySchedules.length})`));
-        daySchedules.forEach(sc => {
-            el.appendChild(makeEl('div', 'day-item day-schedule', sc.title));
-        });
-    }
+   if (daySchedules.length > 0) {
+    el.appendChild(makeEl('div', 'day-section-title', `📅 일정 (${daySchedules.length})`));
+
+    daySchedules.forEach(sc => {
+        const box = makeEl('div', 'day-item day-schedule');
+
+        const title = makeEl('span', '', sc.title);
+
+        const delBtn = makeEl('button', 'del-btn', '삭제');
+        delBtn.type = 'button';
+
+        delBtn.onclick = () => deleteSchedule(sc.id);
+
+        box.appendChild(title);
+        box.appendChild(delBtn);
+
+        el.appendChild(box);
+    });
+}
 }
 
 window.toggleAccordion = function(id) {
