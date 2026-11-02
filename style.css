@@ -972,3 +972,17 @@ html, body {
         padding: 12px;
     }
 }
+.book-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.book-header > span:first-child {
+    flex: 1;
+    overflow-wrap: anywhere;
+}
+
+.book-header .del-btn {
+    flex-shrink: 0;
+}
