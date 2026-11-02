@@ -518,3 +518,28 @@ button, select, input, textarea {
     font-size: 13px;
     padding: 6px 0;
 }
+/* 달력 날짜 칸 너비 균일하게 고정 */
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.cal-day {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* 일정 제목이 길어도 날짜 칸이 늘어나지 않도록 */
+.schedule-title-tag {
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    box-sizing: border-box;
+}
