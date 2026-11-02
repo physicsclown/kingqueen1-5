@@ -210,6 +210,7 @@ function renderPreview(key, previewId) {
 
 setupImagePicker('eval', 'eval-images', 'eval-image-preview');
 setupImagePicker('news', 'news-images', 'news-image-preview');
+setupImagePicker('book', 'book-image', 'book-image-preview');
 
 // 1. 수행평가 등록
 document.getElementById('eval-form').onsubmit = (e) => {
