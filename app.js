@@ -673,14 +673,11 @@ document.getElementById('book-form').onsubmit = (e) => {
         alert('책 등록 실패: ' + err.message);
     });
 };
-
-
 // 책 목록 렌더링
 window.renderBooks = function() {
     const books = getBooks();
     const listEl = document.getElementById('book-list');
 
-    // 현재 펼쳐진 책 기억
     const openIds = new Set(
         Array.from(
             document.querySelectorAll('.book-details:not(.hidden)')
@@ -714,8 +711,20 @@ window.renderBooks = function() {
         arrow.className = 'book-arrow';
         arrow.textContent = openIds.has('book-detail-' + item.id) ? '▲' : '▼';
 
+        // 삭제 버튼
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'del-btn';
+        deleteBtn.textContent = '삭제';
+
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            window.deleteBook(item.id);
+        };
+
         header.appendChild(title);
         header.appendChild(arrow);
+        header.appendChild(deleteBtn);
 
         // 상세 내용
         const detail = document.createElement('div');
@@ -777,7 +786,20 @@ window.renderBooks = function() {
         listEl.appendChild(card);
     });
 };
+// 책 삭제
+window.deleteBook = async function(id) {
+    if (!confirm('이 책 소개를 삭제할까요? 모든 사람의 화면에서 사라져요.')) {
+        return;
+    }
 
+    try {
+        await db.collection('books').doc(id).delete();
+        alert('책 소개가 삭제되었습니다!');
+    } catch (err) {
+        console.error('책 삭제 오류:', err);
+        alert('책 삭제 실패: ' + err.message);
+    }
+};
 // 실시간 동기화: 누군가 올리거나 지우면 모든 기기 화면이 바로 바뀌어요
 renderEvals();
 renderNews();
