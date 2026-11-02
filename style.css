@@ -533,7 +533,69 @@ button, select, input, textarea {
     box-sizing: border-box;
     overflow: hidden;
 }
+/* 전체 화면 가로 넘침 방지 */
+* {
+    box-sizing: border-box;
+}
 
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* 달력 7열 균등 배치 */
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    width: 100%;
+    min-width: 0;
+    gap: 6px;
+}
+
+/* 날짜 칸 */
+.cal-day {
+    min-width: 0;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* 모바일 화면 대응 */
+@media screen and (max-width: 600px) {
+
+    body {
+        padding: 8px;
+    }
+
+    #calendar {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 3px;
+    }
+
+    .cal-day {
+        min-width: 0;
+        padding: 4px 1px;
+        font-size: 13px;
+        min-height: 75px;
+    }
+
+    .schedule-title-tag {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 9px;
+        padding: 3px 1px;
+    }
+
+    .badge-container {
+        gap: 2px;
+    }
+
+    .cal-day .dot {
+        width: 7px;
+        height: 7px;
+    }
+}
 /* 일정 제목이 길어도 날짜 칸이 늘어나지 않도록 */
 .schedule-title-tag {
     max-width: 100%;
