@@ -13,7 +13,17 @@ const db = firebase.firestore();
 let evalsCache = [];
 let schedulesCache = [];
 let newsCache = [];
-const loaded = { evals: false, news: false };
+let booksCache = [];
+
+const loaded = {
+    evals: false,
+    news: false,
+    books: false
+};
+
+function getBooks() {
+    return booksCache;
+}
 
 function getEvals() { return evalsCache; }
 function getSchedules() { return schedulesCache; }
