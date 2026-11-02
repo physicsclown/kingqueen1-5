@@ -615,6 +615,169 @@ async function migrateLocalData() {
     }
 }
 
+// ====================================
+// 세현이의 책 소개
+// ====================================
+
+// 책 등록 폼 열기
+document.getElementById('open-book-form-btn').onclick = () => {
+    document.getElementById('book-form').classList.remove('hidden');
+};
+
+// 책 등록 폼 닫기
+document.getElementById('cancel-book-form-btn').onclick = () => {
+    document.getElementById('book-form').classList.add('hidden');
+};
+
+// 책 등록
+document.getElementById('book-form').onsubmit = (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+
+    if (loadingCount.book > 0) {
+        alert('사진을 불러오는 중이에요. 잠시 기다려 주세요!');
+        return;
+    }
+
+    if (selectedImages.book.length === 0) {
+        alert('책 표지 이미지를 추가해 주세요.');
+        return;
+    }
+
+    const data = {
+        title: document.getElementById('book-title').value,
+        image: selectedImages.book[0],
+        intro: document.getElementById('book-intro').value,
+        recommendation: document.getElementById('book-recommendation').value,
+        createdAt: Date.now()
+    };
+
+    if (tooBig(data)) {
+        alert('이미지 용량이 너무 커요. 다른 사진을 선택해 주세요.');
+        return;
+    }
+
+    runWithBusy(form, () =>
+        db.collection('books').add(data)
+    ).then(() => {
+        form.reset();
+        selectedImages.book = [];
+
+        document.getElementById('book-image-preview').innerHTML = '';
+        form.classList.add('hidden');
+
+        renderBooks();
+        alert('책이 등록되었습니다!');
+    }).catch(err => {
+        alert('책 등록 실패: ' + err.message);
+    });
+};
+
+
+// 책 목록 렌더링
+window.renderBooks = function() {
+    const books = getBooks();
+    const listEl = document.getElementById('book-list');
+
+    // 현재 펼쳐진 책 기억
+    const openIds = new Set(
+        Array.from(
+            document.querySelectorAll('.book-details:not(.hidden)')
+        ).map(el => el.id)
+    );
+
+    if (!loaded.books) {
+        listEl.innerHTML = '<p>책을 불러오는 중...</p>';
+        return;
+    }
+
+    listEl.innerHTML = '';
+
+    if (books.length === 0) {
+        listEl.innerHTML = '<p class="book-empty">아직 등록된 책이 없습니다.</p>';
+        return;
+    }
+
+    books.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+
+        // 제목 부분
+        const header = document.createElement('div');
+        header.className = 'book-header';
+
+        const title = document.createElement('span');
+        title.textContent = '📖 ' + item.title;
+
+        const arrow = document.createElement('span');
+        arrow.className = 'book-arrow';
+        arrow.textContent = openIds.has('book-detail-' + item.id) ? '▲' : '▼';
+
+        header.appendChild(title);
+        header.appendChild(arrow);
+
+        // 상세 내용
+        const detail = document.createElement('div');
+        detail.id = 'book-detail-' + item.id;
+        detail.className = 'book-details';
+
+        if (!openIds.has(detail.id)) {
+            detail.classList.add('hidden');
+        }
+
+        // 책 표지
+        if (item.image) {
+            const img = document.createElement('img');
+            img.src = item.image;
+            img.alt = item.title + ' 표지';
+            img.className = 'book-cover';
+            img.dataset.zoom = '1';
+            detail.appendChild(img);
+        }
+
+        // 책 소개
+        const introSection = document.createElement('div');
+        introSection.className = 'book-text-section';
+
+        const introTitle = document.createElement('h4');
+        introTitle.textContent = '📚 책 소개';
+
+        const introText = document.createElement('p');
+        introText.textContent = item.intro || '';
+
+        introSection.appendChild(introTitle);
+        introSection.appendChild(introText);
+
+        // 세현이의 추천글
+        const recommendSection = document.createElement('div');
+        recommendSection.className = 'book-text-section recommendation';
+
+        const recommendTitle = document.createElement('h4');
+        recommendTitle.textContent = '💬 세현이의 추천글';
+
+        const recommendText = document.createElement('p');
+        recommendText.textContent = item.recommendation || '';
+
+        recommendSection.appendChild(recommendTitle);
+        recommendSection.appendChild(recommendText);
+
+        detail.appendChild(introSection);
+        detail.appendChild(recommendSection);
+
+        // 아코디언 작동
+        header.onclick = () => {
+            detail.classList.toggle('hidden');
+            arrow.textContent = detail.classList.contains('hidden') ? '▼' : '▲';
+        };
+
+        card.appendChild(header);
+        card.appendChild(detail);
+
+        listEl.appendChild(card);
+    });
+};
+
 // 실시간 동기화: 누군가 올리거나 지우면 모든 기기 화면이 바로 바뀌어요
 renderEvals();
 renderNews();
@@ -635,5 +798,12 @@ db.collection('news').onSnapshot(snap => {
     loaded.news = true;
     renderNews();
 }, cloudError);
+// 책 목록 실시간 동기화
+renderBooks();
 
+db.collection('books').onSnapshot(snap => {
+    booksCache = docsToList(snap);
+    loaded.books = true;
+    renderBooks();
+}, cloudError);
 setTimeout(migrateLocalData, 2500);
