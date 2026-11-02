@@ -65,6 +65,31 @@
             <!-- 기사 리스트 (헤드라인 형태) -->
             <div id="news-list" class="news-list"></div>
         </section>
+<!-- 세현이의 책 소개 -->
+<section class="bottom-section card book-section">
+    <div class="section-header">
+        <h2>📚 세현이의 책 소개</h2>
+        <button id="open-book-form-btn" class="btn-primary">
+            + 책 소개하기
+        </button>
+    </div>
+
+    <form id="book-form" class="modal-form hidden">
+        <input type="text" id="book-title" placeholder="책 제목" required>
+
+        <label class="file-label">📷 책 표지 사진</label>
+        <input type="file" id="book-image" accept="image/*">
+        <div id="book-image-preview" class="preview-container"></div>
+
+        <textarea id="book-intro" rows="4" placeholder="책 소개를 작성해 주세요."></textarea>
+        <textarea id="book-recommendation" rows="4" placeholder="세현이의 추천글을 작성해 주세요."></textarea>
+
+        <button type="submit" class="btn-primary full-width">책 등록하기</button>
+        <button type="button" id="cancel-book-form-btn" class="btn-secondary full-width">취소</button>
+    </form>
+
+    <div id="book-list" class="book-list"></div>
+</section>
     </div>
 <!-- 세현이의 책 소개 -->
 <section class="bottom-section card book-section">
