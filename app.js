@@ -518,7 +518,7 @@ function renderDayDetail() {
         const delBtn = makeEl('button', 'del-btn', '삭제');
         delBtn.type = 'button';
 
-        delBtn.onclick = () => deleteSchedule(sc.id);
+      delBtn.onclick = () => window.deleteSchedule(sc.id);
 
         box.appendChild(title);
         box.appendChild(delBtn);
