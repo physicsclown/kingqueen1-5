@@ -143,8 +143,17 @@ function runWithBusy(form, task) {
 }
 
 // 선택한 사진은 고르는 즉시 압축해서 보관 (한 장씩 여러 번 추가해도 쌓여요)
-const selectedImages = { eval: [], news: [] };
-const loadingCount = { eval: 0, news: 0 };
+const selectedImages = {
+    eval: [],
+    news: [],
+    book: []
+};
+
+const loadingCount = {
+    eval: 0,
+    news: 0,
+    book: 0
+};
 
 function setupImagePicker(key, inputId, previewId) {
     const input = document.getElementById(inputId);
